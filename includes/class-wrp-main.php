@@ -77,7 +77,7 @@ class WRP_Main {
     public function wrp_includes(){
 
         //Our test class
-		include_once WRP_ABSPATH . 'includes/class-wrp-test.php';
+		//include_once WRP_ABSPATH . 'includes/class-wrp-test.php';
 		
 		//REST API extension class
 		include_once WRP_ABSPATH . 'includes/class-wrp-rest.php';
