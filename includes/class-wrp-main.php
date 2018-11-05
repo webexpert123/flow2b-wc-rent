@@ -64,6 +64,7 @@ class WRP_Main {
 		$this->define('WRP_ABSPATH', plugin_dir_path(WRP_PLUGIN_FILE));
 		$this->define('WRP_ABSURL', plugin_dir_url(WRP_PLUGIN_FILE));
 		$this->define('WRP_VERSION', $this->version);
+		$this->define('WRP_TEMPLATE_DIR', plugin_dir_path(WRP_PLUGIN_FILE) . 'templates/');
     }
 
     //Method to defining constants if it's not set
@@ -82,6 +83,9 @@ class WRP_Main {
 		//REST API extension class
 		include_once WRP_ABSPATH . 'includes/class-wrp-rest.php';
 
+		//Our hooks class
+		include_once WRP_ABSPATH . 'includes/class-wrp-hooks.php';
+
 	}
 	
 	/**
@@ -89,7 +93,7 @@ class WRP_Main {
 	 */
 
 	/**
-	 * Method for checking formatted multi-dimensional array
+	 * Method for checking formatted multi-dimensional array for Rental Products meta
 	 * Format:
 		array(
 			'regular_price' => '$10',
@@ -107,6 +111,75 @@ class WRP_Main {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Return a validated rent_prices array
+	 * @param rent_prices
+	 */
+	final public function validated_rental_prices(array $data): array {
+
+		//Check if array is not empty
+		if( !empty($data) ){
+
+			//Loop through the elements
+			foreach($data as $index => $array){
+				if( $this->is_rental_prices_formatted($array) ){
+					$array['period_code'] = strtolower( $array['period_code'] ); //in lower case
+					$array['period_name'] = ucwords( $array['period_name'] ); //every word in upper case
+					$data[$index] =  $array;
+				} else {
+					unset($data[$index]);
+				}
+			}
+
+			//Normalize indexes for possible unset
+			$data = array_values( $data );
+
+		}
+
+		return $data;
+
+	}
+
+	/**
+	 * Method for formatting Rental Product price table
+	 * Return type: string
+	 * @param rent_prices
+	 */
+	final public function format_rental_price_table(array $data): string {
+
+		//Check if data is empty
+		if( empty($data) ){
+			return '<p>Rental Product is not configured properly.</p>';
+		}
+
+		//Validate the format of the rent_prices array
+		$data = $this->validated_rental_prices($data);
+
+		//Define the string
+		$string = '';
+
+		//Begin formatting to HTML
+		if( !empty($data) ){
+
+			$string = '<ul class="rental_option_list">';
+
+			//Begin iterables
+			foreach($data as $index => $value){
+				$string .= '
+					<li>
+						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . $value['regular_price'] . ' ' . $value['period_name'] . '</label>
+					</li>
+				';
+			}
+
+			$string .= '</ul>';
+
+		}
+
+		return $string;
+
 	}
 
 }

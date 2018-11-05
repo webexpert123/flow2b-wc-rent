@@ -37,19 +37,8 @@ class WRP_Rest extends WRP_Main {
                     //Check if the value is an array
                     if ( is_array( $value ) ) {
 
-                        //Loop through the elements
-                        foreach($value as $index => $array){
-                            if( $this->is_rental_prices_formatted($array) ){
-                                //Strictly only in lower case
-                                $array['period_code'] = strtolower( $array['period_code'] );
-                                $value[$index] =  $array;
-                            } else {
-                                unset($value[$index]);
-                            }
-                        }
-
-                        //Normalize indexes for possible unset
-                        $value = array_values( $value );
+                        //Check if data is formatted properly
+                        $value = $this->validated_rental_prices($value);
 
                         //Check if the array is not empty
                         if( !empty($value) ){

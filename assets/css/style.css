@@ -1,0 +1,13 @@
+ul.rental_option_list {
+    list-style-type: none!important;
+}
+ul.rental_option_list li {
+    border-bottom: 1px solid #dddddd;
+    padding: 5px 0;
+}
+ul.rental_option_list li:last-child {
+    border-bottom: none;
+}
+ul.rental_option_list li label {
+    font-weight: 600;
+}
