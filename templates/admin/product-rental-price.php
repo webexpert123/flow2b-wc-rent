@@ -11,16 +11,20 @@ defined('ABSPATH') or exit;
 <tr>
     <td class="sort"></td>
     <td>
-        <table class="rental_price_table">
-            <tr>
-                <td><?php echo esc_html_e( 'Regular Price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')'; ?></td>
-                <td><input type="text" name="_rent_prices[<?php echo $index; ?>][regular_price]" value="<?php echo esc_attr( $regular_price ); ?>"/></td>
-            </tr>
-            <tr>
-                <td><?php echo esc_html_e( 'Sale Price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')'; ?></td>
-                <td><input type="text" name="_rent_prices[<?php echo $index; ?>][sale_price]" value="<?php echo esc_attr( $sale_price ); ?>"/></td>
-            </tr>
-        </table>
+        <div class="rental_price_left">
+            <?php echo esc_html_e( 'Regular Price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')'; ?>
+        </div>
+        <div class="rental_price_right">
+            <input type="text" name="_rent_prices[<?php echo $index; ?>][regular_price]" value="<?php echo esc_attr( $regular_price ); ?>"/>
+        </div>
+        <div style="clear:both; margin: 10px 0;"></div>
+        <div class="rental_price_left">
+            <?php echo esc_html_e( 'Sale Price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')'; ?>
+        </div>
+        <div class="rental_price_right">
+            <input type="text" name="_rent_prices[<?php echo $index; ?>][sale_price]" value="<?php echo esc_attr( $sale_price ); ?>"/>
+        </div>
+        <div style="clear:both;"></div>
     </td>
     <td>
         <input type="text" name="_rent_prices[<?php echo $index; ?>][period_name]" value="<?php echo esc_attr( $rent_price['period_name'] ); ?>"/>

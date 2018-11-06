@@ -17,6 +17,12 @@
 .woocommerce_options_panel .rental_prices_fields table td {
     vertical-align: middle;
 }
+.woocommerce_options_panel .rental_prices_fields table tr td {
+    border-bottom: 1px solid #dddddd;
+}
+.woocommerce_options_panel .rental_prices_fields table tr:last-child td {
+    border-bottom: none;
+}
 .woocommerce_options_panel .rental_prices_fields table td .delete {
     display: block;
     text-indent: -9999px;
@@ -65,14 +71,13 @@
 .woocommerce_options_panel .rental_prices_fields table td input {
     width: 100%;
 }
-.woocommerce_options_panel .rental_prices_fields table td table.rental_price_table {
-    width: 100%;
+.woocommerce_options_panel .rental_prices_fields table td div.rental_price_left {
+    width: 50%;
+    float: left;
 }
-.woocommerce_options_panel .rental_prices_fields table td table.rental_price_table tr td {
-    padding: 0;
-}
-.woocommerce_options_panel .rental_prices_fields table td table.rental_price_table tr td:first-child {
-    width: 110px;
+.woocommerce_options_panel .rental_prices_fields table td div.rental_price_right {
+    width: 50%;
+    float: left;
 }
 @media only screen and (max-width: 1280px){
     .woocommerce_options_panel .rental_prices_fields {
