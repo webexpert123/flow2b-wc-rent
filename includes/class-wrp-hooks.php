@@ -15,21 +15,36 @@ class WRP_Hooks extends WRP_Main {
          * List of action hooks
          */
         add_action('wp_enqueue_scripts', array($this, 'wrp_scripts_enqueue_callback'));
+        add_action('admin_enqueue_scripts', array($this, 'wrp_admin_scripts_enqueue_callback'));
         add_action('wp_head', array($this, 'wrp_header_callback'));
 
         //Add back the ratings template wrapper because it was removed by the 10 priority number from the wp_head callback function above
         add_action('woocommerce_single_product_summary', 'woocommerce_template_single_rating', 11);
         add_action('woocommerce_before_add_to_cart_quantity', array($this, 'wrp_render_rental_prices'));
+        add_action('woocommerce_product_options_pricing', array($this, 'wrp_product_options_pricing_clbck'));
+
+        /**
+         * List of filter hooks
+         */
+        add_filter('product_type_options', array($this, 'wrp_product_type'), 10, 1);
 
     }
 
     /**
-     * Callback for any script enqueue codes
+     * Callback for any script enqueue codes in admin
+     */
+    final public function wrp_admin_scripts_enqueue_callback(){
+        //Add admin css
+        wp_enqueue_style('wrp-stylesheet-admin', WRP_ABSURL . 'assets/css/admin.css', array(), WRP_VERSION);
+    }
+
+    /**
+     * Callback for any script enqueue codes in public
      */
     final public function wrp_scripts_enqueue_callback(){
 
         //Add the WRP stylesheet
-        wp_enqueue_style('wrp-stylesheet', WRP_ABSURL . 'assets/css/style.css', array(), WRP_VERSION);
+        wp_enqueue_style('wrp-stylesheet-public', WRP_ABSURL . 'assets/css/style.css', array(), WRP_VERSION);
 
     }
 
@@ -70,6 +85,28 @@ class WRP_Hooks extends WRP_Main {
         include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
     }
 
+    /**
+     * Callback method for adding product type (checkbox) on simple products
+     * @param product_type_options
+     * see get_product_type_options() method from WooCommerce plugin
+     */
+    final public function wrp_product_type(array $array): array {
+        $array['rental'] = array(
+            'id'            => '_rental',
+            'wrapper_class' => 'show_if_simple',
+            'label'         => __( 'Rental', 'woocommerce' ),
+            'description'   => __( 'Rental products can be purchased by period options.', 'woocommerce' ),
+            'default'       => 'no',
+        );
+        return $array;
+    }
+
+    /**
+     * Callback method for adding HTML contents right below the product pricing options for simple products
+     */
+    final public function wrp_product_options_pricing_clbck(){
+        include_once WRP_TEMPLATE_DIR . 'admin/product-options-pricing.php';
+    }
 }
 
 return new WRP_Hooks;
