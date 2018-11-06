@@ -46,7 +46,6 @@
 }
 .woocommerce_options_panel .rental_prices_fields table td .delete:before {
     font-family: Dashicons;
-    speak: none;
     font-weight: 400;
     text-transform: none;
     line-height: 1;
