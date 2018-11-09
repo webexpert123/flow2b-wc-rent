@@ -43,11 +43,11 @@ class WRP_Rest extends WRP_Main {
                         //Check if the array is not empty
                         if( !empty($value) ){
                             //Let's update the product property
-                            update_post_meta( $object->id, '_rental', 'true' );
+                            update_post_meta( $object->id, '_rental', 'yes' );
                             return update_post_meta( $object->id, '_' . $field_name, $value );
                         }
 
-                        return update_post_meta( $object->id, '_rental', 'false' );
+                        return update_post_meta( $object->id, '_rental', 'no' );
 
                     }
 
@@ -67,13 +67,18 @@ class WRP_Rest extends WRP_Main {
             'rental', // field slug.
             array(
                 'get_callback' => function( $object, $field_name, $request ) {
-                    return get_post_meta( $object[ 'id' ], '_' . $field_name, true );
+                    $value = get_post_meta( $object[ 'id' ], '_' . $field_name, true );
+                    if ( wc_string_to_bool( $value ) ) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 },
                 'update_callback' => function( $value, $object, $field_name ){
                     if ( wc_string_to_bool( $value ) ) {
-                        return update_post_meta( $object->id, '_' . $field_name, 'true' );
+                        return update_post_meta( $object->id, '_' . $field_name, 'yes' );
                     } else {
-                        return update_post_meta( $object->id, '_' . $field_name, 'false' );
+                        return update_post_meta( $object->id, '_' . $field_name, 'no' );
                     }
                 },
                 'schema' => array(

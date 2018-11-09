@@ -13,10 +13,6 @@ global $thepostid;
 $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
 ?>
 
-<pre>
-<?php var_dump( sanitize_text_field('!test value') ); ?>
-<pre>
-
 <div class="form-field rental_prices_fields">
     <label><?php esc_html_e( 'Rental Price Options', 'woocommerce' ); ?></label>
     <table class="widefat">

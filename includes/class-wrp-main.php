@@ -136,10 +136,13 @@ class WRP_Main {
 					$array['regular_price'] = floatval( $array['regular_price'] );
 					$array['sale_price'] = floatval( $array['sale_price'] );
 
-					/**
-					 * Lower case the characters and then only the first word is accepted as value
-					 */
-					$array['period_code'] = explode( ' ', strtolower( $array['period_code'] ))[0];
+					//Expected ouput input: "period code" output: "period-code"
+					$array['period_code'] = sanitize_title( $array['period_code'] );
+
+					//Set with period name if no period code is provided
+					if( empty( $array['period_code'] ) ){
+						$array['period_code'] = sanitize_title( $array['period_name'] );
+					}
 
 					$array['period_name'] = ucwords( $array['period_name'] ); //every word in upper case
 					$data[$index] =  $array;
@@ -184,7 +187,7 @@ class WRP_Main {
 			foreach($data as $index => $value){
 				$string .= '
 					<li>
-						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . $value['regular_price'] . ' ' . $value['period_name'] . '</label>
+						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . get_woocommerce_currency_symbol() . $value['regular_price'] . ' ' . $value['period_name'] . '</label>
 					</li>
 				';
 			}

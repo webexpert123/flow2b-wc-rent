@@ -85,7 +85,16 @@ class WRP_Hooks extends WRP_Main {
      */
     final public function wrp_render_rental_prices(){
         global $post;
-        include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
+
+        //Get product meta
+        $rental = get_post_meta($post->ID, '_rental', true);
+        $rental_prices = get_post_meta($post->ID, '_rent_prices', true);
+
+        //Check if rental prices are set including the boolean variable
+        if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+            include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
+        }
+        
     }
 
     /**
@@ -116,12 +125,18 @@ class WRP_Hooks extends WRP_Main {
      */
     final public function wrp_save_rental_product_clbck($post_id){
 
+        if( isset($_POST['_rental']) ){
+            update_post_meta( $post_id, '_rental', 'yes' );
+        } else {
+            update_post_meta( $post_id, '_rental', 'no' );
+        }
+
         if(isset($_POST['_rent_prices'])){
             update_post_meta( $post_id, '_rent_prices', $this->validated_rental_prices( $_POST['_rent_prices'] ) );
         }
         
     }
-     
+
 }
 
 return new WRP_Hooks;
