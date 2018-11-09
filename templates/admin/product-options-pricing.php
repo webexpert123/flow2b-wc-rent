@@ -9,8 +9,13 @@ defined('ABSPATH') or exit;
 global $thepostid;
 
 //Get product meta values
+//$test_rental_prices = get_post_meta($thepostid, '_test_rental_prices', true);
 $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
 ?>
+
+<pre>
+<?php var_dump( sanitize_text_field('!test value') ); ?>
+<pre>
 
 <div class="form-field rental_prices_fields">
     <label><?php esc_html_e( 'Rental Price Options', 'woocommerce' ); ?></label>
@@ -31,7 +36,7 @@ $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
             $rental_prices = $this->validated_rental_prices($rental_prices);
 
             //Begin iterables
-            foreach($rental_prices as $rent_price){
+            foreach($rental_prices as $index => $rent_price){
                 $regular_price = $rent_price['regular_price'];
                 $sale_price = $rent_price['sale_price'];
                 include WRP_TEMPLATE_DIR . 'admin/product-rental-price.php';

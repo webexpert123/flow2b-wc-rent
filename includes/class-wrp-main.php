@@ -104,10 +104,15 @@ class WRP_Main {
 	 * Return type: bool
 	*/
 	final public function is_rental_prices_formatted(array $array): bool {
+
+		//Remove any character strings
+		$array['regular_price'] = floatval( $array['regular_price'] );
+		$array['sale_price'] = floatval( $array['sale_price'] );
+
 		if( empty($array['regular_price']) && empty($array['sale_price']) ){
 			return false;
 		}
-		if( empty($array['period_code']) || empty($array['period_name']) ){
+		if( empty($array['period_code']) && empty($array['period_name']) ){
 			return false;
 		}
 		return true;
@@ -122,10 +127,20 @@ class WRP_Main {
 		//Check if array is not empty
 		if( !empty($data) ){
 
+			//Normalize indexes
+			$data = array_values( $data );
+
 			//Loop through the elements
 			foreach($data as $index => $array){
 				if( $this->is_rental_prices_formatted($array) ){
-					$array['period_code'] = strtolower( $array['period_code'] ); //in lower case
+					$array['regular_price'] = floatval( $array['regular_price'] );
+					$array['sale_price'] = floatval( $array['sale_price'] );
+
+					/**
+					 * Lower case the characters and then only the first word is accepted as value
+					 */
+					$array['period_code'] = explode( ' ', strtolower( $array['period_code'] ))[0];
+
 					$array['period_name'] = ucwords( $array['period_name'] ); //every word in upper case
 					$data[$index] =  $array;
 				} else {

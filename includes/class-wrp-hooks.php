@@ -22,6 +22,9 @@ class WRP_Hooks extends WRP_Main {
         add_action('woocommerce_single_product_summary', 'woocommerce_template_single_rating', 11);
         add_action('woocommerce_before_add_to_cart_quantity', array($this, 'wrp_render_rental_prices'));
         add_action('woocommerce_product_options_pricing', array($this, 'wrp_product_options_pricing_clbck'));
+        
+        //Action hook for saving custom meta value for produc rental prices
+        add_action('save_post', array($this, 'wrp_save_rental_product_clbck'), 10, 1);
 
         /**
          * List of filter hooks
@@ -107,6 +110,18 @@ class WRP_Hooks extends WRP_Main {
     final public function wrp_product_options_pricing_clbck(){
         include_once WRP_TEMPLATE_DIR . 'admin/product-options-pricing.php';
     }
+
+    /**
+     * Callback method for saving product rental prices from the product editor
+     */
+    final public function wrp_save_rental_product_clbck($post_id){
+
+        if(isset($_POST['_rent_prices'])){
+            update_post_meta( $post_id, '_rent_prices', $this->validated_rental_prices( $_POST['_rent_prices'] ) );
+        }
+        
+    }
+     
 }
 
 return new WRP_Hooks;
