@@ -13,6 +13,12 @@ global $thepostid;
 $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
 ?>
 
+<pre>
+<?php
+var_dump( get_post_meta($thepostid, '_test_rent_prices', true) );
+?>
+</pre>
+
 <div class="form-field rental_prices_fields">
     <label><?php esc_html_e( 'Rental Price Options', 'woocommerce' ); ?></label>
     <table class="widefat">
@@ -25,23 +31,38 @@ $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
             </tr>
         </thead>
         <tbody class="ui-sortable">
-        <?php
-        if( !empty($rental_prices) ){
+            <?php
+            if( !empty($rental_prices) ){
 
-            //Validate the format of the rent_prices array
-            $rental_prices = $this->validated_rental_prices($rental_prices);
+                //Validate the format of the rent_prices array
+                $rental_prices = $this->validated_rental_prices($rental_prices);
 
-            //Begin iterables
-            foreach($rental_prices as $index => $rent_price){
-                $regular_price = $rent_price['regular_price'];
-                $sale_price = $rent_price['sale_price'];
-                include WRP_TEMPLATE_DIR . 'admin/product-rental-price.php';
+                //Begin iterables
+                foreach($rental_prices as $index => $rent_price){
+                    $regular_price = $rent_price['regular_price'];
+                    $sale_price = $rent_price['sale_price'];
+                    require WRP_TEMPLATE_DIR . 'admin/product-rental-price.php';
+                }
+
             }
-
-        }
-        ?>
+            ?>
         </tbody>
         <tfoot>
+            <tr>
+                <th colspan="5"><a href="#" class="add_rental button button-secondary" data-row="
+                <?php
+                $index = '';
+                $regular_price = '';
+                $sale_price = '';
+                $rent_price = array(
+                    'period_name' => ''
+                );
+                ob_start();
+                require WRP_TEMPLATE_DIR . 'admin/product-rental-price.php';
+                echo esc_attr( ob_get_clean() );
+                ?>
+                "><?php esc_html_e( 'Add Rental Plan', 'woocommerce' ); ?></a></th>
+            </tr>
         </tfoot>
     </table>
 </div>
@@ -94,5 +115,17 @@ $rental_prices = get_post_meta($thepostid, '_rent_prices', true);
         helper: 'clone',
         opacity: 0.65
     });
+
+    //For deleting rental plans
+	$('#woocommerce-product-data').on('click', '.rental_prices_fields a.delete', function() {
+		$(this).closest( 'tr' ).remove();
+		return false;
+	});
+
+    //For adding rental plans
+	$('#woocommerce-product-data').on('click', '.rental_prices_fields a.add_rental', function() {
+		$(this).closest( '.rental_prices_fields' ).find( 'tbody' ).append( $( this ).data( 'row' ) );
+		return false;
+	});
     
 </script>

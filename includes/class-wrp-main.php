@@ -119,6 +119,31 @@ class WRP_Main {
 	}
 
 	/**
+	 * Method for formatting rental prices that was added by the format:
+		array(
+			array(
+				'regular_price' => '$10',
+			),
+			array(
+				'sale_price' => '$10',
+			),
+			array(
+				'period_name' => '$10',
+			)
+		)
+	 */
+	final public function format_rental_prices_added(array $data): array {
+		if( !empty($data) ){
+			foreach($data as $value){
+				if( count($data) == 1 ){
+					
+				}
+			}
+		}
+		return $data;
+	}
+
+	/**
 	 * Return a validated rent_prices array
 	 * @param rent_prices
 	 */
@@ -144,7 +169,7 @@ class WRP_Main {
 						$array['period_code'] = sanitize_title( $array['period_name'] );
 					}
 
-					$array['period_name'] = ucwords( $array['period_name'] ); //every word in upper case
+					$array['period_name'] = ucwords( sanitize_text_field( $array['period_name'] ) ); //every word in upper case
 					$data[$index] =  $array;
 				} else {
 					unset($data[$index]);
