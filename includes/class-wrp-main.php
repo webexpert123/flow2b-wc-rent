@@ -134,11 +134,21 @@ class WRP_Main {
 	 */
 	final public function format_rental_prices_added(array $data): array {
 		if( !empty($data) ){
+			//Define counter
+			$counter = 0;
+			//Container for a formatted array
+			$array = array();
 			foreach($data as $value){
-				if( count($data) == 1 ){
-					
+				if( count($value) == 1 ){
+					$array[key($value)] = $value[key($value)];
+					$counter++;
+				}
+				if($counter == 3){
+					$data = array_merge($data, array($array));
+					$counter = 0;
 				}
 			}
+			return $data;
 		}
 		return $data;
 	}
@@ -212,7 +222,7 @@ class WRP_Main {
 			foreach($data as $index => $value){
 				$string .= '
 					<li>
-						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . get_woocommerce_currency_symbol() . $value['regular_price'] . ' ' . $value['period_name'] . '</label>
+						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . wc_price( $value['regular_price'] ) . ' ' . $value['period_name'] . '</label>
 					</li>
 				';
 			}
