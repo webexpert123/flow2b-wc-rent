@@ -10,4 +10,11 @@ ul.rental_option_list li:last-child {
 }
 ul.rental_option_list li label {
     font-weight: 600;
+    cursor: pointer;
+}
+ul.rental_option_list li label span.price del {
+    text-decoration-color: #555555;
+}
+ul.rental_option_list li label span.price del span {
+    color: #555555;
 }

@@ -220,11 +220,38 @@ class WRP_Main {
 
 			//Begin iterables
 			foreach($data as $index => $value){
-				$string .= '
-					<li>
-						<label><input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>' . wc_price( $value['regular_price'] ) . ' ' . $value['period_name'] . '</label>
-					</li>
-				';
+
+				//Default price value
+				$price = 0;
+				$price_dropped = 0;
+
+				//Get the rental prices
+				$regular_price = $value['regular_price'];
+				$sale_price = $value['sale_price'];
+
+				//For regular price
+				if( !empty($regular_price) ){
+					$price = $regular_price;
+				}
+
+				//When regular price and sale price are both present
+				if( !empty($regular_price) && !empty($sale_price) ){
+					$price = $sale_price;
+					$price_dropped = $regular_price;
+				}
+
+				//Only render non-zero prices
+				if( !empty( $price ) ){
+					$string .= '
+						<li>
+							<label>
+								<input type="radio" name="rental_price" value="' . $value['period_code'] . '"/>
+								<span class="price">' . ((!empty($price_dropped)) ? '<del>' . wc_price( $price_dropped ) . '</del> ' : '') . wc_price( $price ) . '</span> ' . $value['period_name'] . '
+							</label>
+						</li>
+					';
+				}
+
 			}
 
 			$string .= '</ul>';

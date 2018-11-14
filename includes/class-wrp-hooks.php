@@ -133,7 +133,6 @@ class WRP_Hooks extends WRP_Main {
 
         if(isset($_POST['_rent_prices'])){
             update_post_meta( $post_id, '_rent_prices', $this->validated_rental_prices( $this->format_rental_prices_added( $_POST['_rent_prices'] ) ) );
-            //update_post_meta( $post_id, '_test_rent_prices', $_POST['_rent_prices'] );
         }
         
     }
