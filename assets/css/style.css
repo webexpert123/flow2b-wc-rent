@@ -18,3 +18,8 @@ ul.rental_option_list li label span.price del {
 ul.rental_option_list li label span.price del span {
     color: #555555;
 }
+ul.products ul.rental_option_list, ul.products ul.rental_option_list li {
+    padding: 0!important;
+    margin: 0!important;
+    border: none;
+}

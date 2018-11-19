@@ -6,15 +6,17 @@
 
 //Exit on unecessary access
 defined('ABSPATH') or exit;
-
-//Get product meta values
-$data = get_post_meta($post->ID, '_rent_prices', true);
-
+if( is_null($first_item) ){
+    $first_item = false;
+}
 ?>
 
 <div class="wrp_content_product_rental_prices">
 
+    <?php if( $first_item === false ): ?>
     <h4>Choose Rental Options</h4>
-    <?php echo $this->format_rental_price_table($data); ?>
+    <?php endif; ?>
+
+    <?php echo $this->format_rental_price_table($data, $first_item); ?>
 
 </div>

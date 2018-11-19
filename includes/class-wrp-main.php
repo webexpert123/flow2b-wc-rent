@@ -199,11 +199,12 @@ class WRP_Main {
 	 * Method for formatting Rental Product price table
 	 * Return type: string
 	 * @param rent_prices
+	 * @param first_item
 	 */
-	final public function format_rental_price_table(array $data): string {
+	final public function format_rental_price_table($data, bool $first_item = false): string {
 
 		//Check if data is empty
-		if( empty($data) ){
+		if( empty($data) || !is_array($data) ){
 			return '<p>Rental Product is not configured properly.</p>';
 		}
 
@@ -242,6 +243,17 @@ class WRP_Main {
 
 				//Only render non-zero prices
 				if( !empty( $price ) ){
+
+					//Do this if we want to only show the first item of the loop
+					if( $first_item ){
+						$string .= '
+							<li>
+								<span class="price">' . ((!empty($price_dropped)) ? '<del>' . wc_price( $price_dropped ) . '</del> ' : '') . wc_price( $price ) . ' ' . $value['period_name'] . '</span>
+							</li>
+						';
+						 break;
+					}
+
 					$string .= '
 						<li>
 							<label>
