@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * This template file is  for rendering rental products in the cart page
  */
@@ -85,4 +85,3 @@ $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product
         ?>
     </td>
 </tr>
-<?php
