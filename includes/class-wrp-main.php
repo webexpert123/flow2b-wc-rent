@@ -274,4 +274,25 @@ class WRP_Main {
 
 	}
 
+	/**
+	 * Method for to get two necessary data storage for rental products
+	 * @param ID
+	 */
+	final public function is_rental_product($id): bool {
+
+        //Get product meta
+        $rental = get_post_meta($id, '_rental', true);
+		$rental_prices = get_post_meta($id, '_rent_prices', true);
+		
+        /**
+         * Check if rental prices are set including the boolean variable
+         */
+        if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+            return true;
+		}
+
+		return false;
+		
+	}
+
 }

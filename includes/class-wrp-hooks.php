@@ -13,6 +13,8 @@ class WRP_Hooks extends WRP_Main {
 
         /**
          * List of action hooks
+         * 
+         * 
          */
         add_action('wp_enqueue_scripts', array($this, 'wrp_scripts_enqueue_callback'));
         add_action('admin_enqueue_scripts', array($this, 'wrp_admin_scripts_enqueue_callback'));
@@ -26,13 +28,21 @@ class WRP_Hooks extends WRP_Main {
         add_action('woocommerce_after_shop_loop_item', array($this, 'wrp_woocommerce_after_shop_loop_item'));
         add_action('manage_product_posts_custom_column', array($this, 'wrp_admin_product_posts_column'), 11, 2);
         
-        //Action hook for saving custom meta value for produc rental prices
+        //Action hook for saving custom meta value for product rental prices
         add_action('save_post', array($this, 'wrp_save_rental_product_clbck'), 10, 1);
+
+        //Action hook for custom cart content
+        add_action('woocommerce_cart_contents', array($this, 'wrp_cart_contents'));
 
         /**
          * List of filter hooks
+         * 
+         * 
          */
         add_filter('product_type_options', array($this, 'wrp_product_type'), 10, 1);
+
+        //Filter hook to do something about rental products added to the cart with normal products added
+        add_filter('woocommerce_cart_item_visible', array($this, 'wrp_cart_item_visible'), 10, 3);
 
     }
 
@@ -64,15 +74,11 @@ class WRP_Hooks extends WRP_Main {
         //Do anything for products
         if( $post->post_type = 'product' ){
 
-            //Get product meta
-            $rental = get_post_meta($post->ID, '_rental', true);
-            $rental_prices = get_post_meta($post->ID, '_rent_prices', true);
-
             /**
              * Check if rental prices are set including the boolean variable
              * Note: This applies to single product page
              */
-            if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+            if( $this->is_rental_product($post->ID) ){
 
                 //Remove the sale price in the current product page
                 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_price', 10);
@@ -92,12 +98,8 @@ class WRP_Hooks extends WRP_Main {
     final public function wrp_render_rental_prices_single(){
         global $post;
 
-        //Get product meta
-        $rental = get_post_meta($post->ID, '_rental', true);
-        $rental_prices = get_post_meta($post->ID, '_rent_prices', true);
-
         //Check if rental prices are set including the boolean variable
-        if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+        if( $this->is_rental_product($post->ID) ){
             $data = get_post_meta($post->ID, '_rent_prices', true);
             include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
         }
@@ -111,15 +113,11 @@ class WRP_Hooks extends WRP_Main {
 
         global $product;
 
-        //Get product meta
-        $rental = get_post_meta($product->get_id(), '_rental', true);
-        $rental_prices = get_post_meta($product->get_id(), '_rent_prices', true);
-
         /**
          * Check if rental prices are set including the boolean variable
          * Note: This applies to each product loop item
          */
-        if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+        if( $this->is_rental_product($product->get_id()) ){
 
             //Remove the sale price in the current product loop item
             remove_action('woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 10);
@@ -132,17 +130,14 @@ class WRP_Hooks extends WRP_Main {
      * Callback method for product loops targetting the action hook: woocommerce_after_shop_loop_item
      */
     final public function wrp_woocommerce_after_shop_loop_item(){
-        global $product;
 
-        //Get product meta
-        $rental = get_post_meta($product->get_id(), '_rental', true);
-        $rental_prices = get_post_meta($product->get_id(), '_rent_prices', true);
+        global $product;
 
         /**
          * Check if rental prices are set including the boolean variable
          * Note: This applies to each product loop item
          */
-        if( wc_string_to_bool($rental) && !empty($rental_prices) ){
+        if( $this->is_rental_product($product->get_id()) ){
             $data = get_post_meta($product->get_id(), '_rent_prices', true);
             $first_item = true; //Set this to true to only show the first item of the loop
             include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
@@ -174,15 +169,11 @@ class WRP_Hooks extends WRP_Main {
      */
     final public function wrp_admin_product_posts_column($column, $id){
 
-        //Get product meta
-        $rental = get_post_meta($id, '_rental', true);
-        $rental_prices = get_post_meta($id, '_rent_prices', true);
-
         /**
          * Check if rental prices are set including the boolean variable
          * Note: This applies to each product loop item
          */
-        if( wc_string_to_bool($rental) && !empty($rental_prices) && $column == 'price' ):
+        if( $this->is_rental_product($id) && $column == 'price' ):
             $data = get_post_meta($id, '_rent_prices', true);
             $first_item = true; //Set this to true to only show the first item of the loop
             include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
@@ -224,6 +215,67 @@ class WRP_Hooks extends WRP_Main {
             update_post_meta( $post_id, '_rent_prices', $this->validated_rental_prices( $this->format_rental_prices_added( $_POST['_rent_prices'] ) ) );
         }
         
+    }
+
+    /**
+     * Callback method for showing off additional cart contents
+     */
+    final public function wrp_cart_contents(){
+
+        //Define counter
+        $counter = 0;
+
+        //Loop through each product items from the cart
+        foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+
+            //Check if they are rental products
+            if( $this->is_rental_product($cart_item['product_id']) ){
+
+                //Render the date range content
+                if( $counter == 0 ){
+
+                    echo '
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>test</td>
+                    </tr>
+                    ';
+
+                    $counter++;
+
+                }
+
+                //Get the product data
+                $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+				$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+
+                //Now begin rendering the rental products the Woocommerce way
+                if( $_product && $_product->exists() && $cart_item['quantity'] > 0 ){
+                    include WRP_TEMPLATE_DIR . 'cart-rental-products.php';
+                }
+                
+            }
+
+        }
+
+    }
+
+    /**
+     * Filter method for changing visibility on rental products added to the cart with normal products added
+     */
+    final public function wrp_cart_item_visible($boolean, $cart_item, $cart_item_key){
+
+        //Check if they are rental products
+        if( $this->is_rental_product($cart_item['product_id']) ){
+            return false;
+        }
+
+       return $boolean;
+
     }
 
 }
