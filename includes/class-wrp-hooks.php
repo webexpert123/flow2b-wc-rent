@@ -62,6 +62,12 @@ class WRP_Hooks extends WRP_Main {
         //Add the WRP stylesheet
         wp_enqueue_style('wrp-stylesheet-public', WRP_ABSURL . 'assets/css/style.css', array(), WRP_VERSION);
 
+        //Add the Wordpress Dashicons
+        wp_enqueue_style( 'dashicons' );
+
+        //Add the WRP script js file
+        wp_enqueue_script('wrp-script-public', WRP_ABSURL . 'assets/js/script.js', array(), WRP_VERSION, true);
+
     }
 
     /**
@@ -86,6 +92,15 @@ class WRP_Hooks extends WRP_Main {
             }
 
         }
+
+        //Include the Date Range Picker lib
+        ?>
+        
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+        <?php
 
     }
 
@@ -235,13 +250,16 @@ class WRP_Hooks extends WRP_Main {
                 if( $counter == 0 ){
 
                     echo '
-                    <tr>
+                    <tr class="wrp_date_range_row">
                         <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td></td>
-                        <td>test</td>
+                        <td><b>Set Date</b></td>
+                        <td>
+                            <span class="dashicons dashicons-calendar-alt"></span>
+                            <input id="wrp_date_range" type="text" name="wrp_date_range" placeholder="From -- To"/>
+                        </td>
                     </tr>
                     ';
 
