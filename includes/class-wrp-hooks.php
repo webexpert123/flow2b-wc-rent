@@ -13,8 +13,8 @@ class WRP_Hooks extends WRP_Main {
 
         /**
          * List of action hooks
-         * 
-         * 
+         * #########################
+         * #########################
          */
         add_action('wp_enqueue_scripts', array($this, 'wrp_scripts_enqueue_callback'));
         add_action('admin_enqueue_scripts', array($this, 'wrp_admin_scripts_enqueue_callback'));
@@ -31,18 +31,24 @@ class WRP_Hooks extends WRP_Main {
         //Action hook for saving custom meta value for product rental prices
         add_action('save_post', array($this, 'wrp_save_rental_product_clbck'), 10, 1);
 
-        //Action hook for custom cart content
+        //Action hooks for custom cart content alterations
         add_action('woocommerce_cart_contents', array($this, 'wrp_cart_contents'));
+        add_action('woocommerce_before_calculate_totals', array($this, 'wrp_woocommerce_before_calculate_totals'));
 
         /**
          * List of filter hooks
-         * 
-         * 
+         * #########################
+         * #########################
          */
         add_filter('product_type_options', array($this, 'wrp_product_type'), 10, 1);
 
         //Filter hook to do something about rental products added to the cart with normal products added
         add_filter('woocommerce_cart_item_visible', array($this, 'wrp_cart_item_visible'), 10, 3);
+
+        //Filter hooks for cart metadata alterations
+        add_filter('woocommerce_add_to_cart_validation', array($this, 'wrp_add_to_cart_validation'), 10, 3);
+        add_filter( 'woocommerce_add_cart_item_data', array($this, 'wrp_add_cart_item_data'), 10, 2);
+        add_filter('woocommerce_get_cart_item_from_session', array($this, 'wrp_get_cart_item_from_session'), 10, 3);
 
     }
 
@@ -269,7 +275,7 @@ class WRP_Hooks extends WRP_Main {
 
                 //Get the product data
                 $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-				$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+                $product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
 
                 //Now begin rendering the rental products the Woocommerce way
                 if( $_product && $_product->exists() && $cart_item['quantity'] > 0 ){
@@ -293,6 +299,107 @@ class WRP_Hooks extends WRP_Main {
         }
 
        return $boolean;
+
+    }
+
+    /**
+     * Filter hook to validate a cart item in the cart
+     * @param boolean
+     * @param product_id
+     * @param quantity
+     */
+    final public function wrp_add_to_cart_validation( $passed, $product_id, $quantity ){
+
+        //Only for rental product types
+        if( $this->is_rental_product($product_id) ){
+
+            //Check if rental price plan is choosen. Otherwise, throw an error.
+            if( empty($_POST['rental_price']) ){
+                wc_add_notice('Please make a selection.', 'error');
+                return false;
+            }
+
+        }
+
+        return $passed;
+    }
+
+    /**
+     * Filter hook to store each custom product data as part of the cart item data session
+     * @param cart_item_data
+     * @param product_id
+     */
+    final public function wrp_add_cart_item_data( $cart_item_data, $product_id ){
+        
+        //Only for rental product types
+        if( $this->is_rental_product($product_id) ){
+            $cart_item_data['period_code'] = $_POST['rental_price'];
+        }
+
+        return $cart_item_data;
+
+    }
+
+    /**
+     * Filter hook to get each of the stored custom product data session and add it to the cart object
+     * @param session_data
+     * @param values
+     * @param key
+     */
+    final public function wrp_get_cart_item_from_session( $session_data, $values, $key ){
+
+        //Store the rental price session to the cart object
+        if( array_key_exists('ticket_type', $values) ){
+            $session_data['period_code'] = $values['period_code'];
+        }
+
+        return $session_data;
+
+    }
+
+    /**
+     * Action hook for overriding the rental product price in the cart
+     * @param cart_object
+     */
+    final public function wrp_woocommerce_before_calculate_totals($cart_object){
+
+        //Loop each cart items from the cart object
+        foreach ( $cart_object->cart_contents as $key => $value ) {
+            
+            //Only do this for rental products
+            if( $this->is_rental_product($value['product_id']) ){
+
+                //Get the rental price based on the period code
+                $rental_price = $this->get_rental_price($value['product_id'], $value['period_code']);
+
+                //Check if rental price array is empty
+                if(empty($rental_price)){
+                    return;
+                }
+
+				//Default price value
+				$price = 0;
+
+                //Get regular price and sale price
+                $regular_price = $rental_price['regular_price'];
+                $sale_price = $rental_price['sale_price'];
+
+				//For regular price
+				if( !empty($regular_price) ){
+					$price = $regular_price;
+				}
+
+				//When regular price and sale price are both present
+				if( !empty($regular_price) && !empty($sale_price) ){
+					$price = $sale_price;
+				}
+
+                //Set and override the product price
+                $value['data']->set_price($price);
+
+            }
+
+        }
 
     }
 

@@ -275,7 +275,7 @@ class WRP_Main {
 	}
 
 	/**
-	 * Method for to get two necessary data storage for rental products
+	 * Method to get two necessary data storage for rental products
 	 * @param ID
 	 */
 	final public function is_rental_product($id): bool {
@@ -293,6 +293,27 @@ class WRP_Main {
 
 		return false;
 		
+	}
+
+	/**
+	 * Method to get the rental price (regular and sale) based on the rental period code
+	 * @param product_id
+	 * @param period_code
+	 */
+	final public function get_rental_price($product_id, $period_code): array {
+		
+		//Get rental prices
+		$rental_prices = get_post_meta($product_id, '_rent_prices', true);
+
+		//Loop through each of the rental price array
+		foreach($rental_prices as $rental_price){
+			if( $rental_price['period_code'] === $period_code ){
+				return $rental_price;
+			}
+		}
+
+		return array();
+
 	}
 
 }
