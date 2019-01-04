@@ -49,6 +49,7 @@ class WRP_Hooks extends WRP_Main {
         add_filter('woocommerce_add_to_cart_validation', array($this, 'wrp_add_to_cart_validation'), 10, 3);
         add_filter( 'woocommerce_add_cart_item_data', array($this, 'wrp_add_cart_item_data'), 10, 2);
         add_filter('woocommerce_get_cart_item_from_session', array($this, 'wrp_get_cart_item_from_session'), 10, 3);
+        add_filter('woocommerce_cart_item_price', array($this, 'wrp_cart_item_price'), 10, 3);
 
     }
 
@@ -405,6 +406,33 @@ class WRP_Hooks extends WRP_Main {
 
         }
 
+    }
+
+    /**
+     * Filter hook to change the price displayed on rental products
+     * @param price
+     * @param cart_item
+     * @param cart_item_key
+     */
+    final public function wrp_cart_item_price($price, $cart_item, $cart_item_key){
+
+        //Only do this for rental products
+        if($this->is_rental_product($cart_item['product_id'])){
+
+            //Get rental price array
+            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['period_code']);
+
+            //Render regular price vs sale price accordingly
+            if( $rental_price['regular_price'] > $rental_price['sale_price'] ){
+                return '<span class="cart_rental_price"><del>' . wc_price($rental_price['regular_price']) . '</del> ' . $price . '<br>' . $rental_price['period_name'] . '</span>';
+            }
+
+            return '<span>' . $price . '<br>' . $rental_price['period_name'] . '</span>';
+
+        }
+        
+        return $price;
+        
     }
 
 }

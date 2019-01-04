@@ -57,7 +57,7 @@ $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product
 
     <td class="product-price" data-title="<?php esc_attr_e( 'Price', 'woocommerce' ); ?>">
         <?php
-            echo apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key ) . '<br />' . $this->get_rental_price($product_id, $cart_item['period_code'])['period_name']; // PHPCS: XSS ok.
+            echo apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
         ?>
     </td>
 
