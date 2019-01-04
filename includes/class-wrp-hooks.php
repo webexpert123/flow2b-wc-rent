@@ -391,7 +391,11 @@ class WRP_Hooks extends WRP_Main {
 
 				//When regular price and sale price are both present
 				if( !empty($regular_price) && !empty($sale_price) ){
-					$price = $sale_price;
+                    
+					if( floatval($regular_price) > floatval($sale_price) ){
+						$price = $sale_price;
+					}
+                    
 				}
 
                 //Set and override the product price

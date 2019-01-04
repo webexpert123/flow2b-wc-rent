@@ -237,8 +237,14 @@ class WRP_Main {
 
 				//When regular price and sale price are both present
 				if( !empty($regular_price) && !empty($sale_price) ){
-					$price = $sale_price;
-					$price_dropped = $regular_price;
+					
+					if( floatval($regular_price) > floatval($sale_price) ){
+						$price = $sale_price;
+						$price_dropped = $regular_price;
+					} elseif( floatval($regular_price) == floatval($sale_price) ){
+						$price_dropped = 0;
+					} else {}
+					
 				}
 
 				//Only render non-zero prices
