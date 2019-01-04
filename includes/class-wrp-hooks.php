@@ -161,7 +161,7 @@ class WRP_Hooks extends WRP_Main {
         if( $this->is_rental_product($product->get_id()) ){
             $data = get_post_meta($product->get_id(), '_rent_prices', true);
             $first_item = true; //Set this to true to only show the first item of the loop
-            include_once WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
+            include WRP_TEMPLATE_DIR . 'content-product-rental-prices.php';
         }
 
         //Add back the price for non-rental products
