@@ -58,8 +58,24 @@ jQuery(function () {
           window.wrp_date_picker.startDate = start;
           window.wrp_date_picker.endDate = end;
 
+          //Set the input fields
+          jQuery('input[name="wrp_date_start"]').val(start.valueOf());
+          jQuery('input[name="wrp_date_end"]').val(end.valueOf());
+
         }
       );
+
+      //Only do this if the hidden input fields are not yet set
+      if (jQuery('input[name="wrp_date_start"]').val() == '' && jQuery('input[name="wrp_date_end"]').val() == '') {
+
+        //Set initial date input variables on datepicker initialization
+        init_startDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').startDate;
+        init_endDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').endDate;
+
+        jQuery('input[name="wrp_date_start"]').val(init_startDate.valueOf());
+        jQuery('input[name="wrp_date_end"]').val(init_endDate.valueOf());
+
+      }
 
     },
 

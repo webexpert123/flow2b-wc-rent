@@ -33,7 +33,7 @@ class WRP_Hooks extends WRP_Main {
 
         //Action hooks for custom cart content alterations
         add_action('woocommerce_cart_contents', array($this, 'wrp_cart_contents'));
-        add_action('woocommerce_before_calculate_totals', array($this, 'wrp_woocommerce_before_calculate_totals'));
+        add_action('woocommerce_before_calculate_totals', array($this, 'wrp_before_calculate_totals'));
 
         /**
          * List of filter hooks
@@ -266,6 +266,8 @@ class WRP_Hooks extends WRP_Main {
                         <td>
                             <span class="dashicons dashicons-calendar-alt"></span>
                             <input id="wrp_date_range" type="text" name="wrp_date_range" placeholder="From -- To"/>
+                            <input type="hidden" name="wrp_date_start"/>
+                            <input type="hidden" name="wrp_date_end"/>
                         </td>
                     </tr>
                     ';
@@ -323,6 +325,7 @@ class WRP_Hooks extends WRP_Main {
         }
 
         return $passed;
+
     }
 
     /**
@@ -350,8 +353,14 @@ class WRP_Hooks extends WRP_Main {
     final public function wrp_get_cart_item_from_session( $session_data, $values, $key ){
 
         //Store the rental price session to the cart object
-        if( array_key_exists('ticket_type', $values) ){
+        if( array_key_exists('period_code', $values) && !isset($_POST['wrp_date_range']) && !isset($_POST['wrp_date_start']) && !isset($_POST['wrp_date_end']) ){
             $session_data['period_code'] = $values['period_code'];
+        }
+
+        //Do this for cart update scenario
+        if( isset($_POST['wrp_date_range']) && isset($_POST['wrp_date_start']) && isset($_POST['wrp_date_end']) ){
+            $session_data['wrp_date_start'] = $_POST['wrp_date_start'];
+            $session_data['wrp_date_end'] = $_POST['wrp_date_end'];
         }
 
         return $session_data;
@@ -362,7 +371,7 @@ class WRP_Hooks extends WRP_Main {
      * Action hook for overriding the rental product price in the cart
      * @param cart_object
      */
-    final public function wrp_woocommerce_before_calculate_totals($cart_object){
+    final public function wrp_before_calculate_totals($cart_object){
 
         //Loop each cart items from the cart object
         foreach ( $cart_object->cart_contents as $key => $value ) {
@@ -401,6 +410,9 @@ class WRP_Hooks extends WRP_Main {
 
                 //Set and override the product price
                 $value['data']->set_price($price);
+
+                //Do the cart session filter hook again for changing some data during cart update
+                add_filter('woocommerce_get_cart_item_from_session', array($this, 'wrp_get_cart_item_from_session'), 10, 3);
 
             }
 
