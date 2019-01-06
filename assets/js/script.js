@@ -69,8 +69,8 @@ jQuery(function () {
           window.wrp_date_picker.endDate = end;
 
           //Set the input fields
-          jQuery('input[name="wrp_date_start"]').val(start.valueOf());
-          jQuery('input[name="wrp_date_end"]').val(end.valueOf());
+          jQuery('input[name="wrp_date_start"]').val(start.format('YYYY-MM-DD hh:mm A'));
+          jQuery('input[name="wrp_date_end"]').val(end.format('YYYY-MM-DD hh:mm A'));
 
         }
       );
@@ -79,11 +79,11 @@ jQuery(function () {
       if (jQuery('input[name="wrp_date_start"]').val() == '' && jQuery('input[name="wrp_date_end"]').val() == '') {
 
         //Set initial date input variables on datepicker initialization
-        init_startDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').startDate;
-        init_endDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').endDate;
+        init_startDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').startDate.format('YYYY-MM-DD hh:mm A');
+        init_endDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').endDate.format('YYYY-MM-DD hh:mm A');
 
-        jQuery('input[name="wrp_date_start"]').val(init_startDate.valueOf());
-        jQuery('input[name="wrp_date_end"]').val(init_endDate.valueOf());
+        jQuery('input[name="wrp_date_start"]').val(init_startDate);
+        jQuery('input[name="wrp_date_end"]').val(init_endDate);
 
       }
 

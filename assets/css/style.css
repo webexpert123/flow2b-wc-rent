@@ -58,3 +58,9 @@ tr.wrp_date_range_row span.dashicons-calendar-alt {
 form.woocommerce-cart-form .cart_rental_price del {
     opacity: 0.5;
 }
+/*
+.variation-From p, .variation-To p {
+    width: 100%;
+    display: inline-block;
+}
+*/

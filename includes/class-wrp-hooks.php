@@ -50,6 +50,7 @@ class WRP_Hooks extends WRP_Main {
         add_filter( 'woocommerce_add_cart_item_data', array($this, 'wrp_add_cart_item_data'), 10, 2);
         add_filter('woocommerce_get_cart_item_from_session', array($this, 'wrp_get_cart_item_from_session'), 10, 3);
         add_filter('woocommerce_cart_item_price', array($this, 'wrp_cart_item_price'), 10, 3);
+        add_filter('woocommerce_get_item_data', array($this, 'wrp_get_item_data'), 10, 2);
 
     }
 
@@ -438,15 +439,52 @@ class WRP_Hooks extends WRP_Main {
 
             //Render regular price vs sale price accordingly
             if( $rental_price['regular_price'] > $rental_price['sale_price'] ){
-                return '<span class="cart_rental_price"><del>' . wc_price($rental_price['regular_price']) . '</del> ' . $price . '<br>' . $rental_price['period_name'] . '</span>';
+                return '<span class="cart_rental_price"><del>' . wc_price($rental_price['regular_price']) . '</del> ' . $price . '</span>';
             }
 
-            return '<span>' . $price . '<br>' . $rental_price['period_name'] . '</span>';
+            return '<span>' . $price . '</span>';
 
         }
         
         return $price;
         
+    }
+
+    /**
+     * Filter hook to add additional metadata in the cart and checkout page
+     * @param item_data
+     * @param cart_item
+     */
+    final public function wrp_get_item_data($item_data, $cart_item){
+        
+        //Do this for rental products
+        if($this->is_rental_product($cart_item['product_id'])){
+
+            //Get rental price array
+            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['period_code']);
+            
+            //Set the key and value for rental rate
+            $item_data[] = array(
+                'key' => 'Rate',
+                'value' => WC()->cart->get_product_price( $cart_item['data'] ) . ' / ' . $rental_price['period_name']
+            );
+
+            //Set key and value for Date Start
+            $item_data[] = array(
+                'key' => 'From',
+                'value' => date('M d, Y h:i A', strtotime($cart_item['wrp_date_range']['date_start']))
+            );
+
+            //Set key and value for Date End
+            $item_data[] = array(
+                'key' => 'To',
+                'value' => date('M d, Y h:i A', strtotime($cart_item['wrp_date_range']['date_end']))
+            );
+
+        }
+
+        return $item_data;
+
     }
 
 }
