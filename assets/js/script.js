@@ -24,6 +24,16 @@ jQuery(function () {
         this.input_changed
       );
 
+      /**
+       * Trigger cart update on load so that the daterange data can be placed in the cart session
+       * Note: Do this only on the cart page with the rental products added
+       */
+      if (jQuery('tr').is('.wrp_date_range_row')) {
+        jQuery(document).ready(function () {
+          jQuery('.woocommerce-cart-form :input[name="update_cart"]').trigger('wc_update_cart');
+        });
+      }
+
     },
 
     /**

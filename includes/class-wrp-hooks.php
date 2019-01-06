@@ -359,8 +359,10 @@ class WRP_Hooks extends WRP_Main {
 
         //Do this for cart update scenario
         if( isset($_POST['wrp_date_range']) && isset($_POST['wrp_date_start']) && isset($_POST['wrp_date_end']) ){
-            $session_data['wrp_date_start'] = $_POST['wrp_date_start'];
-            $session_data['wrp_date_end'] = $_POST['wrp_date_end'];
+            $session_data['wrp_date_range'] = array(
+                'date_start' => sanitize_text_field($_POST['wrp_date_start']),
+                'date_end' => sanitize_text_field($_POST['wrp_date_end'])
+            );
         }
 
         return $session_data;

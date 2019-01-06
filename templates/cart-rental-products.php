@@ -59,6 +59,9 @@ $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product
         <?php
             echo apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
         ?>
+        <pre>
+        <?php //var_dump($cart_item); ?>
+        </pre>
     </td>
 
     <td class="product-quantity" data-title="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>">
