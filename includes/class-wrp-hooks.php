@@ -254,6 +254,13 @@ class WRP_Hooks extends WRP_Main {
             //Check if they are rental products
             if( $this->is_rental_product($cart_item['product_id']) ){
 
+                //Get date range whether it was set or is empty
+                $wrp_date_range = $cart_item['wrp_date_range'];
+
+                //Set date range
+                $date_start = (!empty($wrp_date_range) && !empty($wrp_date_range['date_start'])) ? $wrp_date_range['date_start'] : '';
+                $date_end = (!empty($wrp_date_range) && !empty($wrp_date_range['date_end'])) ? $wrp_date_range['date_end'] : '';
+
                 //Render the date range content
                 if( $counter == 0 ){
 
@@ -266,9 +273,9 @@ class WRP_Hooks extends WRP_Main {
                         <td><b>Set Date</b></td>
                         <td>
                             <span class="dashicons dashicons-calendar-alt"></span>
-                            <input id="wrp_date_range" type="text" name="wrp_date_range" placeholder="From -- To"/>
-                            <input type="hidden" name="wrp_date_start"/>
-                            <input type="hidden" name="wrp_date_end"/>
+                            <input id="wrp_date_range" type="text" name="wrp_date_range" placeholder="From -- To" autocomplete="off"/>
+                            <input type="hidden" name="wrp_date_start" value="' . $date_start . '"/>
+                            <input type="hidden" name="wrp_date_end" value="' . $date_end . '"/>
                         </td>
                     </tr>
                     ';
