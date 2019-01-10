@@ -35,6 +35,11 @@ class WRP_Hooks extends WRP_Main {
         add_action('woocommerce_cart_contents', array($this, 'wrp_cart_contents'));
         add_action('woocommerce_before_calculate_totals', array($this, 'wrp_before_calculate_totals'));
 
+        //Action hooks for custom order details alterations
+        add_action('woocommerce_add_order_item_meta', array($this, 'wrp_add_order_item_meta'), 10, 2);
+        add_action('woocommerce_new_order_item', array($this, 'wrp_new_order_item'), 10, 3);
+        add_action('woocommerce_order_item_meta_start', array($this, 'wrp_order_item_meta_start'), 10, 3);
+
         /**
          * List of filter hooks
          * #########################
@@ -345,7 +350,7 @@ class WRP_Hooks extends WRP_Main {
         
         //Only for rental product types
         if( $this->is_rental_product($product_id) ){
-            $cart_item_data['period_code'] = $_POST['rental_price'];
+            $cart_item_data['rental_period_code'] = $_POST['rental_price'];
         }
 
         return $cart_item_data;
@@ -361,12 +366,12 @@ class WRP_Hooks extends WRP_Main {
     final public function wrp_get_cart_item_from_session( $session_data, $values, $key ){
 
         //Store the rental price session to the cart object
-        if( array_key_exists('period_code', $values) && !isset($_POST['wrp_date_range']) && !isset($_POST['wrp_date_start']) && !isset($_POST['wrp_date_end']) ){
-            $session_data['period_code'] = $values['period_code'];
+        if( $this->is_rental_product($values['product_id']) && array_key_exists('rental_period_code', $values) && !isset($_POST['wrp_date_range']) && !isset($_POST['wrp_date_start']) && !isset($_POST['wrp_date_end']) ){
+            $session_data['rental_period_code'] = $values['rental_period_code'];
         }
 
         //Do this for cart update scenario
-        if( isset($_POST['wrp_date_range']) && isset($_POST['wrp_date_start']) && isset($_POST['wrp_date_end']) ){
+        if( $this->is_rental_product($values['product_id']) && isset($_POST['wrp_date_range']) && isset($_POST['wrp_date_start']) && isset($_POST['wrp_date_end']) ){
             $session_data['wrp_date_range'] = array(
                 'date_start' => sanitize_text_field($_POST['wrp_date_start']),
                 'date_end' => sanitize_text_field($_POST['wrp_date_end'])
@@ -389,8 +394,8 @@ class WRP_Hooks extends WRP_Main {
             //Only do this for rental products
             if( $this->is_rental_product($value['product_id']) ){
 
-                //Get the rental price based on the period code
-                $rental_price = $this->get_rental_price($value['product_id'], $value['period_code']);
+                //Get the rental price based on the rental period code
+                $rental_price = $this->get_rental_price($value['product_id'], $value['rental_period_code']);
 
                 //Check if rental price array is empty
                 if(empty($rental_price)){
@@ -442,7 +447,7 @@ class WRP_Hooks extends WRP_Main {
         if($this->is_rental_product($cart_item['product_id'])){
 
             //Get rental price array
-            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['period_code']);
+            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['rental_period_code']);
 
             //Render regular price vs sale price accordingly
             if( $rental_price['regular_price'] > $rental_price['sale_price'] ){
@@ -468,7 +473,7 @@ class WRP_Hooks extends WRP_Main {
         if($this->is_rental_product($cart_item['product_id'])){
 
             //Get rental price array
-            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['period_code']);
+            $rental_price = $this->get_rental_price($cart_item['product_id'], $cart_item['rental_period_code']);
             
             //Set the key and value for rental rate
             $item_data[] = array(
@@ -491,6 +496,102 @@ class WRP_Hooks extends WRP_Main {
         }
 
         return $item_data;
+
+    }
+
+    /**
+     * Action hook to add custom metadata to the order item
+     * @param item_id
+     * @param value
+     */
+    final public function wrp_add_order_item_meta( $item_id, $value){
+
+        //Only do this for rental products with rental_period_code and wrp_date_range metakey
+        $wrp_date_range = $value['wrp_date_range'];
+        if(!empty($wrp_date_range) && $this->is_rental_product($value['product_id'])){
+            $wrp_date_range['product_id'] = $value['product_id'];
+            $wrp_date_range['rental_price_array'] = $this->get_rental_price($value['product_id'], $value['rental_period_code']);
+            wc_add_order_item_meta($item_id, 'wrp_date_range', $wrp_date_range);
+        }
+
+    }
+
+    /**
+     * Action hook to add custom metadata to the order details during order post
+     * @param item_id
+     * @param item
+     * @param order_id
+     */
+    final public function wrp_new_order_item($item_id, $item, $order_id){
+
+        //Get all the data for each of the order items
+        $item_data = $item->get_data();
+
+        //Get the cart contents
+        foreach(WC()->cart->get_cart() as $product_item){
+            //echo '<pre>';
+            //var_dump($product_item);
+            //echo '</pre>';
+        }
+
+    }
+
+    /**
+     * Action hook for displaying custom metadata in the order details
+     * @param item_id
+     * @param item
+     * @param order
+     */
+    final public function wrp_order_item_meta_start($item_id, $item, $order){
+
+        //Only do this for rental products
+        if(!$this->is_rental_product( $item->get_data()['product_id'] )){
+            return;
+        }
+
+        //Loop through each of the metadata
+        foreach($item->get_meta_data() as $product_metadata){
+
+            //Get the data from the metadata object
+            $product_data = $product_metadata->get_data();
+
+            //Do this if the product data exists and only for wrp_date_range data key
+            if(!empty($product_data) && $product_data['key'] == 'wrp_date_range'){
+
+                //Get rental price array
+                $rental_price = $product_data['value']['rental_price_array'];
+
+				//Default price value
+				$price = 0;
+
+                //Get regular price and sale price
+                $regular_price = $rental_price['regular_price'];
+                $sale_price = $rental_price['sale_price'];
+
+				//For regular price
+				if( !empty($regular_price) ){
+					$price = $regular_price;
+				}
+
+				//When regular price and sale price are both present
+				if( !empty($regular_price) && !empty($sale_price) ){
+                    
+					if( floatval($regular_price) > floatval($sale_price) ){
+						$price = $sale_price;
+					}
+                    
+				}
+
+                //Render the metadata
+                echo '
+                    <dt><p><b>Rate:</b> ' . wc_price($price) . ' / ' . $rental_price['period_name']. '</p></dt>
+                    <dt><p><b>From:</b> ' . date('M d, Y h:i A', strtotime($product_data['value']['date_start'])) . '</p></dt>
+                    <dt><p><b>To:</b> ' . date('M d, Y h:i A', strtotime($product_data['value']['date_end'])) . '</p></dt>
+                ';
+
+            }
+
+        }
 
     }
 
