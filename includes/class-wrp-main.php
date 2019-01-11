@@ -322,4 +322,53 @@ class WRP_Main {
 
 	}
 
+	/**
+	 * Method for rendering rental products metadata in the format:
+	 * Rate: $10 / Period Name
+	 * From: Date Time
+	 * To: Date Time
+	 * @param metadata
+	 */
+	final public function render_rental_metadata($metadata): string {
+
+        //Quick check
+        if(!empty($metadata) && $this->is_rental_product($metadata['product_id'])){
+
+            //Get rental price array
+            $rental_price = $metadata['rental_price_array'];
+
+            //Default price value
+            $price = 0;
+
+            //Get regular price and sale price
+            $regular_price = $rental_price['regular_price'];
+            $sale_price = $rental_price['sale_price'];
+
+            //For regular price
+            if( !empty($regular_price) ){
+                $price = $regular_price;
+            }
+
+            //When regular price and sale price are both present
+            if( !empty($regular_price) && !empty($sale_price) ){
+                
+                if( floatval($regular_price) > floatval($sale_price) ){
+                    $price = $sale_price;
+                }
+                
+            }
+
+            //Render the metadata
+            return '
+                <dt><p><b>Rate:</b> ' . wc_price($price) . ' / ' . $rental_price['period_name']. '</p></dt>
+                <dt><p><b>From:</b> ' . date('M d, Y h:i A', strtotime($metadata['date_start'])) . '</p></dt>
+                <dt><p><b>To:</b> ' . date('M d, Y h:i A', strtotime($metadata['date_end'])) . '</p></dt>
+            ';
+
+		}
+		
+		return '';
+
+	}
+
 }

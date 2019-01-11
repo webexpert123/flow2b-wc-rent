@@ -37,8 +37,11 @@ class WRP_Hooks extends WRP_Main {
 
         //Action hooks for custom order details alterations
         add_action('woocommerce_add_order_item_meta', array($this, 'wrp_add_order_item_meta'), 10, 2);
-        add_action('woocommerce_new_order_item', array($this, 'wrp_new_order_item'), 10, 3);
+        //add_action('woocommerce_new_order_item', array($this, 'wrp_new_order_item'), 10, 3);
         add_action('woocommerce_order_item_meta_start', array($this, 'wrp_order_item_meta_start'), 10, 3);
+
+        //Action hooks for displaying order details in the WP Dashboard
+        add_action('woocommerce_before_order_itemmeta', array($this, 'wrp_before_order_itemmeta'), 10, 3);
 
         /**
          * List of filter hooks
@@ -558,40 +561,31 @@ class WRP_Hooks extends WRP_Main {
             //Do this if the product data exists and only for wrp_date_range data key
             if(!empty($product_data) && $product_data['key'] == 'wrp_date_range'){
 
-                //Get rental price array
-                $rental_price = $product_data['value']['rental_price_array'];
+                //Get the product metadata
+                $product_data_metadata = $product_data['value'];
 
-				//Default price value
-				$price = 0;
-
-                //Get regular price and sale price
-                $regular_price = $rental_price['regular_price'];
-                $sale_price = $rental_price['sale_price'];
-
-				//For regular price
-				if( !empty($regular_price) ){
-					$price = $regular_price;
-				}
-
-				//When regular price and sale price are both present
-				if( !empty($regular_price) && !empty($sale_price) ){
-                    
-					if( floatval($regular_price) > floatval($sale_price) ){
-						$price = $sale_price;
-					}
-                    
-				}
-
-                //Render the metadata
-                echo '
-                    <dt><p><b>Rate:</b> ' . wc_price($price) . ' / ' . $rental_price['period_name']. '</p></dt>
-                    <dt><p><b>From:</b> ' . date('M d, Y h:i A', strtotime($product_data['value']['date_start'])) . '</p></dt>
-                    <dt><p><b>To:</b> ' . date('M d, Y h:i A', strtotime($product_data['value']['date_end'])) . '</p></dt>
-                ';
+                //Render the rental product metadata
+                echo $this->render_rental_metadata($product_data_metadata);
 
             }
 
         }
+
+    }
+
+    /**
+     * Action hook for displaying order metadata in the order page inside the WP Dashboard
+     * @param item_id
+     * @param item
+     * @param product
+     */
+    final public function wrp_before_order_itemmeta($item_id, $item, $product){
+
+        //Get the rental products order item metadata
+        $rental_price_meta = wc_get_order_item_meta($item_id, 'wrp_date_range');
+
+        //Render the rental product metadata
+        echo $this->render_rental_metadata($rental_price_meta);
 
     }
 
