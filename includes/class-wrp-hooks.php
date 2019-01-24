@@ -50,6 +50,9 @@ class WRP_Hooks extends WRP_Main {
          */
         add_filter('product_type_options', array($this, 'wrp_product_type'), 10, 1);
 
+        //Filter hook to show off the rental prices even if the standard product value is empty
+        add_filter('woocommerce_is_purchasable', array($this, 'wrp_is_purchasable'), 30, 2);
+
         //Filter hook to do something about rental products added to the cart with normal products added
         add_filter('woocommerce_cart_item_visible', array($this, 'wrp_cart_item_visible'), 10, 3);
 
@@ -586,6 +589,22 @@ class WRP_Hooks extends WRP_Main {
 
         //Render the rental product metadata
         echo $this->render_rental_metadata($rental_price_meta);
+
+    }
+
+    /**
+     * Filter hook to deal with rental products configured with empty standard price (before selecting rental checkbox)
+     * @param boolean
+     * @param product
+     */
+    final public function wrp_is_purchasable($boolean, $product){
+
+        //For rental products
+        if( $this->is_rental_product($product->get_id()) ){
+            return true;
+        }
+
+        return $boolean;
 
     }
 
