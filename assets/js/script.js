@@ -43,31 +43,52 @@ jQuery(function () {
 
       //Set initial values
       startDate = (jQuery('input[name="wrp_date_start"]').val() == '') ? moment().startOf('hour') : jQuery('input[name="wrp_date_start"]').val();
-      endDate = (jQuery('input[name="wrp_date_end"]').val() == '') ? moment().startOf('hour').add(32, 'hour') : jQuery('input[name="wrp_date_end"]').val();
-
+      endDate = (jQuery('input[name="wrp_date_end"]').val() == '') ? moment().startOf('hour') : jQuery('input[name="wrp_date_end"]').val();
+      // endDate = (jQuery('input[name="wrp_date_end"]').val() == '') ? moment().startOf('hour').add(32, 'hour') : jQuery('input[name="wrp_date_end"]').val();
+      
       jQuery('input[name="wrp_date_range"]').daterangepicker(
         {
           autoApply: true,
           timePicker: true,
+          autoUpdateInput: false,
           opens: 'center',
           drops: 'down',
           minDate: moment().startOf('hour'),
           startDate: startDate,
           endDate: endDate,
           locale: {
-            format: 'YYYY-MM-DD hh:mm A'
+            format: 'YYYY-MM-DD hh:mm A'  
           }
         }, function (start, end) {
-
+          
           //Set the input fields
+          jQuery('input[name="wrp_date_range"]').val(start.format('YYYY-MM-DD hh:mm A')+' - '+end.format('YYYY-MM-DD hh:mm A'));
           jQuery('input[name="wrp_date_start"]').val(start.format('YYYY-MM-DD hh:mm A'));
-          jQuery('input[name="wrp_date_end"]').val(end.format('YYYY-MM-DD hh:mm A'));
+          jQuery('input[name="wrp_date_end"]').val(end.format('YYYY-MM-DD hh:mm A'));   
 
+          /* call API for rental price On date select*/  
+          var ajax_url      =  ajax_obj.ajax_url;
+          var product_sku   =  jQuery('#product_sku').val();
+            jQuery.ajax({
+            url: ajax_url ,
+            type: 'POST',
+            data: {
+                   action : 'add_new_price', 
+                   startDate : start.format('YYYY-MM-DD hh:mm A'),
+                   endDate : end.format('YYYY-MM-DD hh:mm A'),
+                   product_sku : product_sku,
+                 },
+            success: function(result_data){         
+               jQuery('.rental_price_detials').html(result_data);
+               return false;  
+            }
+          });
+          
         }
       );
 
       //Only do this if the hidden input fields are not yet set
-      if (jQuery('input[name="wrp_date_start"]').val() == '' && jQuery('input[name="wrp_date_end"]').val() == '') {
+      /*if (jQuery('input[name="wrp_date_start"]').val() == '' && jQuery('input[name="wrp_date_end"]').val() == '') {
 
         //Set initial date input variables on datepicker initialization
         init_startDate = jQuery('input[name="wrp_date_range"]').data('daterangepicker').startDate.format('YYYY-MM-DD hh:mm A');
@@ -76,7 +97,7 @@ jQuery(function () {
         jQuery('input[name="wrp_date_start"]').val(init_startDate);
         jQuery('input[name="wrp_date_end"]').val(init_endDate);
 
-      }
+      }*/
 
     },
 
